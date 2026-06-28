@@ -316,6 +316,26 @@ function load(){
 }
 function save(db){ lsSet(KEY, JSON.stringify(db)); }
 function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3); }
+
+/* ---------- cloud bridge: record a gym session so Relentless can see it ---------- */
+const SUPABASE_URL = "https://gfybbddndlthafhwackk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ZmlSO-dz4fLI44N26reYHg_VjtxHNHq";
+function recordGymSession(){
+  try{
+    const t = new Date();
+    const day = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+    fetch(`${SUPABASE_URL}/rest/v1/gym_sessions?on_conflict=profile,session_date`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "resolution=ignore-duplicates"      // one row per profile per day
+      },
+      body: JSON.stringify({ profile: DB.activeProfile, session_date: day, source: "nextset" })
+    }).catch(()=>{});      // best-effort — never block logging if offline
+  }catch(e){}
+}
 function activeProfile(){ return DB.profiles.find(p=>p.id===DB.activeProfile) || DB.profiles[0]; }
 function curGoal(){ return activeProfile().goal; }
 
@@ -547,6 +567,7 @@ function finishExercise(ex){
   const workout={ id:uid(), exerciseId:ex.id, profileId:DB.activeProfile, date:new Date().toISOString(), goal:exCfg(ex).key,
     readinessFlag:draft.readiness, flags, sets };
   DB.workouts.push(workout); save(DB);
+  recordGymSession();                 // tell the cloud you trained today (for Relentless)
 
   const next = prescribe(historyFor(ex.id), ex);
   draft=null;

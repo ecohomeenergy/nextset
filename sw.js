@@ -1,6 +1,6 @@
 // NextSet service worker — offline app shell.
 // Bump CACHE on each deploy to force clients to refresh cached assets.
-const CACHE = "nextset-v3";
+const CACHE = "nextset-v4";
 const ASSETS = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"
