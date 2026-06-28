@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f17" />
+<title>NextSet — your lifting coach</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="NextSet" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="icon-192.png" />
+<style>
+  :root{
+    --bg:#0b0f17; --card:#141a26; --card2:#1b2331; --line:#26303f;
+    --text:#eef2f8; --dim:#9aa7b8; --accent:#36d6a6;
+    --accent2:#5b8cff; --warn:#ffb454; --bad:#ff6b6b; --good:#36d6a6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  body{padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px);}
+  .wrap{max-width:520px; margin:0 auto; padding:0 16px;}
+  header{position:sticky; top:0; z-index:5; background:linear-gradient(var(--bg),rgba(11,15,23,.85));
+    backdrop-filter:blur(8px); padding:14px 0 10px;}
+  h1{font-size:20px; margin:0; letter-spacing:.3px;}
+  h1 .dot{color:var(--accent);}
+  .sub{color:var(--dim); font-size:13px; margin-top:2px;}
+  .row{display:flex; align-items:center; gap:10px;}
+  .spacer{flex:1;}
+  .pill{font-size:12px; color:var(--dim); background:var(--card); border:1px solid var(--line);
+    padding:5px 10px; border-radius:999px;}
+  .seg{display:inline-flex; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px;}
+  .seg button{background:transparent; border:0; color:var(--dim); font-size:13px; font-weight:600;
+    padding:6px 12px; border-radius:999px; cursor:pointer;}
+  .seg button.on{background:var(--accent2); color:#fff;}
+  .pswitch{display:flex; gap:8px; margin-top:12px;}
+  .pbtn{flex:1; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--card);
+    border:1px solid var(--line); color:var(--dim); border-radius:12px; padding:10px; font-weight:700; font-size:15px; cursor:pointer;}
+  .pbtn.on{border-color:var(--accent); color:var(--text); background:rgba(54,214,166,.10);}
+  .pbtn .av{width:24px; height:24px; border-radius:50%; background:var(--card2); display:flex; align-items:center;
+    justify-content:center; font-size:12px; font-weight:800; color:var(--text);}
+  .pbtn.on .av{background:var(--accent); color:#04150f;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin:12px 0;}
+  .ex{display:flex; align-items:center; gap:12px; cursor:pointer;}
+  .ex h3{margin:0; font-size:16px;}
+  .ex .meta{color:var(--dim); font-size:12.5px; margin-top:3px;}
+  .target{margin-left:auto; text-align:right;}
+  .target .big{font-size:15px; font-weight:700; color:var(--text);}
+  .target .lbl{font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.6px;}
+  .chev{color:var(--dim); font-size:20px; margin-left:6px;}
+  .ssh{font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--accent2); padding:2px 4px 8px;}
+  .ssjoin{text-align:center; color:var(--dim); font-size:13px; font-weight:700; margin:2px 0;}
+  .ssmember{border-top:1px solid var(--line); padding-top:6px; margin-top:6px;}
+  .flagtag{display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    padding:3px 7px; border-radius:6px; margin-top:6px;}
+  .f-WEIGHT_UP,.f-SEED{background:rgba(54,214,166,.15); color:var(--good);}
+  .f-REP_UP{background:rgba(91,140,255,.16); color:#9db8ff;}
+  .f-REPEAT,.f-CONSOLIDATE,.f-INCOMPLETE{background:rgba(255,180,84,.15); color:var(--warn);}
+  .f-DELOAD,.f-BACKOFF{background:rgba(255,107,107,.15); color:var(--bad);}
+  .note{color:var(--dim); font-size:13px; line-height:1.45; margin-top:8px;}
+  .setrow{display:grid; grid-template-columns:26px 1fr 1fr; gap:10px; align-items:center; margin:10px 0;}
+  .setrow .idx{color:var(--dim); font-weight:700; font-size:13px; text-align:center;}
+  .stepper{display:flex; align-items:center; background:var(--card2); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .stepper button{width:42px; height:46px; background:transparent; border:0; color:var(--text); font-size:22px; cursor:pointer;}
+  .stepper input{width:100%; text-align:center; background:transparent; border:0; color:var(--text);
+    font-size:18px; font-weight:700; -moz-appearance:textfield;}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;}
+  .caplbl{font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.6px; text-align:center; margin-bottom:5px;}
+  .chips{display:flex; gap:6px; margin:6px 0 2px 36px;}
+  .chip{flex:1; text-align:center; font-size:11.5px; font-weight:600; color:var(--dim);
+    background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:7px 0; cursor:pointer;}
+  .chip.on{border-color:var(--accent2); color:#fff; background:rgba(91,140,255,.18);}
+  .btn{display:block; width:100%; text-align:center; border:0; border-radius:14px; padding:15px;
+    font-size:16px; font-weight:700; cursor:pointer; margin-top:14px;}
+  .btn.primary{background:var(--accent); color:#04150f;}
+  .btn.ghost{background:var(--card2); color:var(--text); border:1px solid var(--line);}
+  .btn.tiny{padding:9px 12px; font-size:13px; width:auto; display:inline-block;}
+  .back{background:transparent; border:0; color:var(--accent2); font-size:15px; font-weight:600; cursor:pointer; padding:0; margin-bottom:2px;}
+  .hidden{display:none;}
+  .lasttime{color:var(--dim); font-size:13px;}
+  .lasttime b{color:var(--text);}
+  .planhead{display:flex; align-items:baseline; gap:8px;}
+  .planhead .w{font-size:30px; font-weight:800; letter-spacing:.5px;}
+  .planhead .x{color:var(--dim); font-size:16px;}
+  .toggle{display:flex; align-items:center; gap:8px; color:var(--dim); font-size:13px; margin-top:10px;}
+  .switch{position:relative; width:42px; height:24px; background:var(--card2); border:1px solid var(--line); border-radius:999px; cursor:pointer; transition:.15s;}
+  .switch.on{background:var(--warn); border-color:var(--warn);}
+  .switch i{position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:.15s;}
+  .switch.on i{left:21px;}
+  .spark{margin-top:10px;}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--good); color:#04150f; font-weight:700; padding:12px 18px; border-radius:12px; transition:.25s; pointer-events:none; z-index:20; max-width:90%; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .empty{color:var(--dim); text-align:center; padding:30px 10px; font-size:14px;}
+  .histline{display:flex; justify-content:space-between; font-size:13px; color:var(--dim); padding:7px 0; border-top:1px solid var(--line);}
+  .histline b{color:var(--text); font-weight:600;}
+  .seedinput{margin:6px 0 2px;}
+  .seedinput input{width:120px; text-align:center; background:var(--card2); border:1px solid var(--line); color:var(--text); border-radius:12px; padding:12px; font-size:18px; font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row">
+      <div>
+        <h1>Next<span class="dot">Set</span></h1>
+        <div class="sub">Tells you what to lift next — from what you did last.</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="seg" id="goalseg">
+        <button data-goal="hypertrophy" class="on">Muscle</button>
+        <button data-goal="strength">Strength</button>
+      </div>
+    </div>
+    <div class="pswitch" id="pswitch"></div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home"></div>
+
+  <!-- EXERCISE -->
+  <div id="exview" class="hidden"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   NextSet — progressive-overload prediction engine + logger
+   Single-file prototype. Same engine ports to Lovable/Supabase.
+   ============================================================ */
+
+/* ---------- CONFIG ---------- */
+const GOAL_CONFIG = {
+  strength:    { repMin:3, repMax:5,  sets:4, restHint:"3–5 min rest" },
+  hypertrophy: { repMin:8, repMax:12, sets:3, restHint:"1–2 min rest" },
+};
+const P = {
+  E1RM_REP_CAP:12,
+  ASSUMED_RIR_WHEN_ABSENT:0,   // skipped difficulty = treat as to-failure (conservative)
+  RIR_TOPSET_MAX:1,
+  RIR_TOO_EASY:3,
+  MAX_JUMP:1.10,               // never prescribe >110% of last load
+  MISS_TOLERANCE:2,
+  PLATEAU_WINDOW:3,
+  DELOAD_PCT:0.10,
+  READINESS_PCT:0.07,
+  SEED_HAIRCUT:0.10,
+};
+
+/* ---------- MATH ---------- */
+const epley   = (w,r)=> w*(1+r/30);
+const wForReps= (e1rm,r)=> e1rm/(1+r/30);     // inverse Epley
+const effReps = s => s.reps + (s.rir==null ? P.ASSUMED_RIR_WHEN_ABSENT : s.rir);
+const clamp   = (v,lo,hi)=> Math.max(lo,Math.min(hi,v));
+const roundLoad=(kg,meta)=> Math.max(meta.minLoadKg, Math.round(kg/meta.incrementKg)*meta.incrementKg);
+function bestE1RM(sets,meta){
+  let best=0;
+  for(const s of sets){ if(s.wasWarmup) continue; if(s.reps>P.E1RM_REP_CAP) continue;
+    best=Math.max(best, epley(s.weight, effReps(s))); }
+  return best;
+}
+
+/* ---------- per-exercise config + mode-aware display ---------- */
+// Exercises with a fixed `range` ignore the Muscle/Strength toggle and store history under
+// the "fixed" key; the rest follow the global goal so the toggle re-prescribes them.
+function exCfg(ex){
+  if(ex.range) return { repMin:ex.range.repMin, repMax:ex.range.repMax, sets:ex.range.sets, key:"fixed", repStep:ex.repStep||1 };
+  const g = GOAL_CONFIG[curGoal()];
+  return { repMin:g.repMin, repMax:g.repMax, sets:g.sets, key:curGoal(), repStep:1 };
+}
+const isCarry = ex => ex.mode==="carry";
+const isBW    = ex => ex.mode==="bodyweight";
+const repUnit = ex => isCarry(ex) ? "m" : "";
+function wTxt(ex, w){ if(w==null) return ""; if(isBW(ex)) return w>0 ? `BW +${w}kg` : "bodyweight"; return `${w}kg`; }
+function planText(ex, w, reps){ if(w==null) return "Set a start"; return `${wTxt(ex,w)} × ${reps}${repUnit(ex)}`; }
+
+/* ---------- ENGINE: prescribe next session ---------- */
+function prescribe(historyForExercise, ex){
+  const cfg = exCfg(ex);
+  const inc = ex.incrementKg;
+  const hist = historyForExercise.filter(s=>s.goal===cfg.key).sort((a,b)=>a.date.localeCompare(b.date));
+
+  if(hist.length===0) return seed(ex, cfg);
+
+  const last = hist[hist.length-1];
+  const work = last.sets.filter(s=>!s.wasWarmup).slice(0, cfg.sets);
+  if(work.length===0) return seed(ex, cfg);
+  const w = work[0].weight;
+
+  // partial session — don't evaluate graduation on incomplete work
+  if(work.length < cfg.sets)
+    return out(w, cfg.repMin, cfg.sets, "INCOMPLETE",
+      `You logged ${work.length} of ${cfg.sets} sets last time. Repeat ${wTxt(ex,w)} and complete all sets to progress.`);
+
+  // plateau via the progression state machine (NOT e1RM)
+  if(isStatePlateau(hist, cfg)){
+    const dl = roundLoad(w*(1-P.DELOAD_PCT), ex);
+    return out(dl, cfg.repMin, cfg.sets, "DELOAD",
+      `Stalled for ${P.PLATEAU_WINDOW} sessions. Deload to ${planText(ex,dl,cfg.repMin)} and rebuild — this breaks plateaus.`);
+  }
+
+  const reps = work.map(s=>s.reps);
+  const minReps = Math.min(...reps);
+  const allHitTop = work.every(s=>s.reps>=cfg.repMax);
+
+  if(allHitTop){
+    const tooEasy = work.every(s=>s.rir!=null && s.rir>=P.RIR_TOO_EASY);
+    const step = tooEasy ? inc*2 : inc;
+    let newW = roundLoad(Math.min(w+step, w*P.MAX_JUMP), ex);
+    if(newW<=w) newW = roundLoad(w+inc, ex);
+    // seed safety: don't let an over-eager first session fire a big jump (skipped when e1RM is 0, e.g. bodyweight)
+    if(last.flags && last.flags.includes("SEED")){
+      const safe = roundLoad(wForReps(bestE1RM(work,ex)*(1-P.SEED_HAIRCUT), cfg.repMin), ex);
+      if(safe>0) newW = Math.min(newW, Math.max(safe, w));
+    }
+    const topMsg = isCarry(ex) ? `Carried the full ${cfg.repMax}m every set.` : `All sets hit ${cfg.repMax}.`;
+    const upMsg  = (isBW(ex) && w===0) ? `Time to add weight — ${wTxt(ex,newW)}` : `Up to ${wTxt(ex,newW)}`;
+    return out(newW, cfg.repMin, cfg.sets, "WEIGHT_UP",
+      `${topMsg} ${upMsg}, back to ${cfg.repMin}${repUnit(ex)}.`);
+  }
+
+  if(minReps < cfg.repMin){
+    if(consecutiveFloorMisses(hist,cfg) >= P.MISS_TOLERANCE){
+      const back = roundLoad(w-inc, ex);
+      return out(back, cfg.repMin, cfg.sets, "BACKOFF",
+        `Missed the bottom of the range twice. Back off to ${wTxt(ex,back)} and rebuild.`);
+    }
+    return out(w, cfg.repMin, cfg.sets, "REPEAT",
+      `Repeat ${wTxt(ex,w)} — aim for a clean ${cfg.repMin}${repUnit(ex)} on every set.`);
+  }
+
+  const target = clamp(minReps + cfg.repStep, cfg.repMin, cfg.repMax);
+  const moreMsg = isCarry(ex) ? "go further" : "add a rep";
+  return out(w, target, cfg.sets, "REP_UP",
+    `Same ${wTxt(ex,w)} — ${moreMsg}. Aim ${target}${repUnit(ex)} on every set (you hit ${minReps}${repUnit(ex)} last time).`);
+}
+
+function seed(ex, cfg){
+  if(isBW(ex))
+    return out(0, cfg.repMin, cfg.sets, "SEED", `First time: just bodyweight. Aim ${cfg.repMin}–${cfg.repMax} reps, stop ~2 short, log honestly.`);
+  if(isCarry(ex))
+    return out(null, cfg.repMin, cfg.sets, "SEED", `First time. Pick a weight you can carry ${cfg.repMin}m with good posture — it learns from there.`);
+  return out(null, cfg.repMin, cfg.sets, "SEED",
+    `First time on this lift. Pick a weight you could do about ${cfg.repMax+2} times — but STOP at ${cfg.repMin}. It learns from what you log.`);
+}
+
+function isStatePlateau(hist, cfg){
+  const prog = hist.filter(s=> !flag(s,"READINESS") && !flag(s,"SEED") && !flag(s,"DELOAD"));
+  if(prog.length < P.PLATEAU_WINDOW+1) return false;
+  const win = prog.slice(-(P.PLATEAU_WINDOW+1));
+  for(let i=1;i<win.length;i++){
+    const wUp = workWeight(win[i]) > workWeight(win[i-1]);
+    const rUp = minWorkReps(win[i]) > minWorkReps(win[i-1]);
+    if(wUp||rUp) return false;
+  }
+  return true;
+}
+function consecutiveFloorMisses(hist,cfg){
+  let c=0;
+  for(let i=hist.length-1;i>=0;i--){ if(minWorkReps(hist[i])<cfg.repMin) c++; else break; }
+  return c;
+}
+
+/* small helpers on a session */
+const flag=(s,f)=> s.flags && s.flags.includes(f);
+function workSets(s){ return s.sets.filter(x=>!x.wasWarmup); }
+function workWeight(s){ const ws=workSets(s); return ws.length?ws[0].weight:0; }
+function minWorkReps(s){ const ws=workSets(s); return ws.length?Math.min(...ws.map(x=>x.reps)):0; }
+function out(weight,reps,sets,flag,note){ return {weight,reps,sets,flag,note}; }
+function disp(w){ return w==null ? "your starting weight" : (Number.isInteger(w)? w+"kg" : w+"kg"); }
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+const KEY="nextset.v2";
+// Canonical exercise list (Paul's program). Stable string ids so workouts survive list edits.
+// mode: barbell | dumbbell_pair | machine_cable | bodyweight | carry
+// range present  -> fixed rep scheme (ignores Muscle/Strength toggle); absent -> follows the toggle.
+const EXERCISES = [
+  { id:"chinup",  name:"Chin-ups",            mode:"bodyweight",   incrementKg:2.5, minLoadKg:0,  range:{repMin:6, repMax:12, sets:3}, supersetGroup:"A" },
+  { id:"dips",    name:"Dips",                mode:"bodyweight",   incrementKg:2.5, minLoadKg:0,  range:{repMin:6, repMax:12, sets:3}, supersetGroup:"A" },
+  { id:"bench",   name:"Bench Press",         mode:"barbell",      incrementKg:2.5, minLoadKg:20 },
+  { id:"incline", name:"Incline Bench Press", mode:"barbell",      incrementKg:2.5, minLoadKg:20 },
+  { id:"curl",    name:"Dumbbell Bicep Curls",mode:"dumbbell_pair",incrementKg:2,   minLoadKg:4,  range:{repMin:8, repMax:12, sets:3}, perHand:true },
+  { id:"lateral", name:"Lateral Raises",      mode:"dumbbell_pair",incrementKg:1,   minLoadKg:2,  range:{repMin:12,repMax:20, sets:3}, perHand:true },
+  { id:"pulldown",name:"Lat Pulldown",        mode:"machine_cable",incrementKg:5,   minLoadKg:15 },
+  { id:"row",     name:"Seated Row",          mode:"machine_cable",incrementKg:5,   minLoadKg:15 },
+  { id:"farmer",  name:"Farmer's Walk",       mode:"carry",        incrementKg:5,   minLoadKg:10, range:{repMin:30,repMax:50, sets:2}, repStep:5, perHand:true },
+];
+let memStore={}, canPersist=true;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ canPersist=false; return (k in memStore)?memStore[k]:null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ canPersist=false; memStore[k]=v; } }
+function load(){
+  let db=null;
+  try{ db=JSON.parse(lsGet(KEY)); }catch(e){}
+  if(!db) db={};
+  if(!Array.isArray(db.workouts)) db.workouts=[];
+  // migrate single-user shape -> profiles (Paul keeps existing history)
+  if(!Array.isArray(db.profiles) || !db.profiles.length){
+    db.profiles=[{id:"paul",name:"Paul",goal:db.goal||"hypertrophy"},{id:"alfie",name:"Alfie",goal:"hypertrophy"}];
+    db.activeProfile="paul";
+    db.workouts.forEach(w=>{ if(!w.profileId) w.profileId="paul"; });
+  }
+  if(!db.activeProfile || !db.profiles.find(p=>p.id===db.activeProfile)) db.activeProfile=db.profiles[0].id;
+  db.profiles.forEach(p=>{ if(!p.goal) p.goal="hypertrophy"; });
+  delete db.goal;                      // goal now lives per profile
+  db.exercises = EXERCISES;            // always fresh from code; logged workouts persist by stable id
+  save(db);
+  return db;
+}
+function save(db){ lsSet(KEY, JSON.stringify(db)); }
+function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3); }
+function activeProfile(){ return DB.profiles.find(p=>p.id===DB.activeProfile) || DB.profiles[0]; }
+function curGoal(){ return activeProfile().goal; }
+
+/* ============================================================
+   STATE + RENDER
+   ============================================================ */
+let DB = load();
+let openExId = null;
+let draft = null;          // {readiness, sets:[{weight,reps,rir}], plan, seedWeight}
+
+const $ = sel => document.querySelector(sel);
+const home = $("#home"), exview = $("#exview");
+
+/* goal segmented control (per active profile) */
+document.querySelectorAll("#goalseg button").forEach(b=>{
+  b.onclick=()=>{
+    activeProfile().goal=b.dataset.goal; save(DB);
+    document.querySelectorAll("#goalseg button").forEach(x=>x.classList.toggle("on", x===b));
+    if(openExId) renderExercise(); else renderHome();
+  };
+});
+function syncGoalSeg(){ document.querySelectorAll("#goalseg button").forEach(x=>x.classList.toggle("on", x.dataset.goal===curGoal())); }
+
+/* person switcher — whose workout am I logging */
+function renderProfiles(){
+  const el=$("#pswitch");
+  el.innerHTML = DB.profiles.map(p=>`<button class="pbtn ${p.id===DB.activeProfile?'on':''}" data-p="${p.id}">
+      <span class="av">${p.name[0].toUpperCase()}</span>${p.name}</button>`).join("");
+  el.querySelectorAll(".pbtn").forEach(b=> b.onclick=()=>{
+    if(b.dataset.p===DB.activeProfile) return;
+    DB.activeProfile=b.dataset.p; save(DB);
+    openExId=null; draft=null;
+    renderProfiles(); renderHome();
+  });
+}
+
+function historyFor(exId){ return DB.workouts.filter(w=>w.exerciseId===exId && w.profileId===DB.activeProfile); }
+
+function lastSessionText(ex){
+  const key = exCfg(ex).key;
+  const h=historyFor(ex.id).filter(w=>w.goal===key).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!h.length) return null;
+  const ws=workSets(h[h.length-1]);
+  return { date:h[h.length-1].date, weight:ws[0].weight,
+    txt: `${wTxt(ex,ws[0].weight)} × ${ws.map(s=>s.reps).join(", ")}${repUnit(ex)}` };
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  syncGoalSeg();
+  exview.classList.add("hidden"); home.classList.remove("hidden");
+  let html = `<div class="card" style="background:transparent;border:0;padding:6px 2px 0">
+      <div class="row"><span class="pill">${curGoal()==="strength"?"Strength · 3–5 reps":"Muscle · 8–12 reps"}</span>
+      <span class="pill">${activeProfile().name}'s session</span></div></div>`;
+  if(!canPersist) html += `<div class="card" style="background:rgba(255,180,84,.08);border-color:var(--warn)">
+      <div class="note" style="margin:0;color:var(--warn)">Preview mode — this sandbox can't save data between reloads. Open the file directly on your phone and it remembers everything.</div></div>`;
+  const done=new Set();
+  DB.exercises.forEach(ex=>{
+    if(done.has(ex.id)) return;
+    if(ex.supersetGroup){
+      const members=DB.exercises.filter(e=>e.supersetGroup===ex.supersetGroup);
+      members.forEach(m=>done.add(m.id));
+      html += `<div class="card"><div class="ssh">Superset · do back-to-back</div>
+        ${members.map((m,i)=>`<div class="${i?'ssmember':''}">${exRow(m)}</div>`).join("")}
+      </div>`;
+    } else {
+      html += `<div class="card">${exRow(ex)}</div>`;
+    }
+  });
+  home.innerHTML = html;
+  home.querySelectorAll(".ex").forEach(el=> el.onclick=()=>{ openExId=el.dataset.ex; draft=null; renderExercise(); });
+}
+function exRow(ex){
+  const p = prescribe(historyFor(ex.id), ex);
+  const last = lastSessionText(ex);
+  return `<div class="ex" data-ex="${ex.id}">
+      <div>
+        <h3>${ex.name}</h3>
+        <div class="meta">${ last ? "Last: <b style='color:#cdd7e6'>"+last.txt+"</b>" : "Not started yet" }</div>
+        <span class="flagtag f-${p.flag}">${flagLabel(p.flag)}</span>
+      </div>
+      <div class="target">
+        <div class="lbl">Today</div>
+        <div class="big">${planText(ex, p.weight, p.reps)}</div>
+        <div class="lbl" style="margin-top:2px">${p.sets} sets</div>
+      </div>
+      <span class="chev">›</span>
+    </div>`;
+}
+
+function flagLabel(f){
+  return {SEED:"Start here", WEIGHT_UP:"Add weight", REP_UP:"Add a rep", REPEAT:"Repeat",
+    BACKOFF:"Back off", DELOAD:"Deload", INCOMPLETE:"Finish all sets", CONSOLIDATE:"Lock it in"}[f]||f;
+}
+
+/* ---------- EXERCISE / LOGGING ---------- */
+function renderExercise(){
+  const ex = DB.exercises.find(e=>e.id===openExId);
+  const cfg = exCfg(ex);
+  const plan = prescribe(historyFor(ex.id), ex);
+  const last = lastSessionText(ex);
+
+  if(!draft){
+    const startW = plan.weight!=null ? plan.weight : (last? last.weight : ex.minLoadKg);
+    draft = { readiness:false, seedWeight: plan.weight==null? null : undefined,
+      sets: Array.from({length:plan.sets},()=>({weight:startW, reps:plan.reps, rir:null})), plan };
+  }
+
+  home.classList.add("hidden"); exview.classList.remove("hidden");
+  const needSeed = plan.weight==null && draft.seedWeight==null;
+  const stepsLabel = isCarry(ex) ? `${ex.incrementKg}kg · ${cfg.repStep}m steps`
+                   : isBW(ex)    ? `bodyweight + belt`
+                   :               `${ex.incrementKg}kg steps`;
+
+  let html = `<button class="back" id="back">‹ All lifts</button>
+    <div class="card">
+      <div class="row"><h3 style="margin:0;font-size:18px">${ex.name}</h3>
+        <span class="spacer"></span><span class="pill">${stepsLabel}</span></div>
+      ${ ex.perHand ? `<div class="meta" style="margin-top:5px">weights are per hand</div>`:""}
+      ${ last ? `<div class="lasttime" style="margin-top:8px">Last time: <b>${last.txt}</b></div>`:""}
+      <span class="flagtag f-${plan.flag}" style="margin-top:10px">${flagLabel(plan.flag)}</span>
+      <div class="note">${plan.note}</div>
+    </div>`;
+
+  if(needSeed){
+    const seedLbl = isCarry(ex) ? "Carry weight" : "Your starting weight";
+    html += `<div class="card">
+      <div class="caplbl" style="text-align:left">${seedLbl}${ex.perHand?" · per hand":""}</div>
+      <div class="seedinput"><input id="seedw" type="number" inputmode="decimal" placeholder="kg"
+         value="${last? last.weight : ''}"> <span style="color:var(--dim)">kg</span></div>
+      <div class="note">${plan.note}</div>
+      <button class="btn primary tiny" id="setseed">Use this weight</button>
+    </div>`;
+    exview.innerHTML=html;
+    $("#back").onclick=()=>{ openExId=null; draft=null; renderHome(); };
+    $("#setseed").onclick=()=>{
+      const v=parseFloat($("#seedw").value); if(isNaN(v)||v<=0) return shake($("#seedw"));
+      draft.seedWeight=v; draft.sets.forEach(s=>s.weight=v); renderExercise();
+    };
+    return;
+  }
+
+  // plan headline
+  const headW = draft.sets[0].weight;
+  const repWord = isCarry(ex) ? "metres" : "reps";
+  html += `<div class="card">
+    <div class="planhead"><span class="w">${wTxt(ex,headW)}</span><span class="x">×</span>
+      <span class="w" style="font-size:24px">${plan.reps}${repUnit(ex)}</span><span class="x">${repWord} × ${plan.sets} sets</span></div>
+    <div class="note">Pre-filled with today's target. Adjust to what you actually did, then finish.</div>`;
+
+  const wCol = isBW(ex) ? "Added kg" : (ex.perHand ? "Kg/hand" : "Kg");
+  const rCol = isCarry(ex) ? "Metres" : "Reps";
+  draft.sets.forEach((s,i)=>{
+    html += `<div class="caplbl" style="margin-top:14px;text-align:left;margin-left:36px">${ i===0? wCol+" &nbsp;·&nbsp; "+rCol:"" }</div>
+      <div class="setrow">
+        <div class="idx">${i+1}</div>
+        ${stepper("w",i,s.weight,ex.incrementKg)}
+        ${stepper("r",i,s.reps,cfg.repStep)}
+      </div>
+      <div class="chips" data-set="${i}">
+        ${chip(i,"Easy",3,s.rir)}${chip(i,"Just right",2,s.rir)}${chip(i,"Hard",1,s.rir)}${chip(i,"Failed",0,s.rir)}
+      </div>`;
+  });
+
+  html += `<div class="toggle"><div>Rough day? Ease today's loads ~7%</div><span class="spacer"></span>
+      <div class="switch ${draft.readiness?'on':''}" id="rough"><i></i></div></div>
+    <button class="btn primary" id="finish">Finish &amp; get next target</button>
+    </div>`;
+
+  // history + trend
+  const showE1RM = !isCarry(ex) && !isBW(ex);
+  const h = historyFor(ex.id).filter(w=>w.goal===cfg.key).sort((a,b)=>b.date.localeCompare(a.date));
+  if(h.length){
+    html += `<div class="card"><div class="caplbl" style="text-align:left">${showE1RM?"Progress (est. 1RM)":"History"}</div>
+      ${showE1RM?sparkline(ex, h):""}<div style="margin-top:6px"></div>`;
+    h.slice(0,8).forEach(w=>{
+      const ws=workSets(w);
+      html += `<div class="histline"><span>${fmtDate(w.date)}</span>
+        <b>${wTxt(ex,ws[0].weight)} × ${ws.map(s=>s.reps).join(", ")}${repUnit(ex)}</b>
+        <span>${showE1RM? Math.round(bestE1RM(ws,ex))+"kg e1RM" : ""}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  exview.innerHTML=html;
+  bindExercise(ex);
+}
+
+function stepper(kind,i,val,step){
+  return `<div class="stepper" data-kind="${kind}" data-i="${i}" data-step="${step}">
+    <button class="dec">−</button>
+    <input type="number" inputmode="decimal" value="${val}">
+    <button class="inc">+</button></div>`;
+}
+function chip(i,label,rir,cur){
+  return `<div class="chip ${cur===rir?'on':''}" data-i="${i}" data-rir="${rir}">${label}</div>`;
+}
+
+function bindExercise(ex){
+  $("#back").onclick=()=>{ openExId=null; draft=null; renderHome(); };
+  exview.querySelectorAll(".stepper").forEach(st=>{
+    const i=+st.dataset.i, kind=st.dataset.kind, step=+st.dataset.step;
+    const input=st.querySelector("input");
+    const setv=v=>{ v=Math.max(0, +(v).toFixed(3)); input.value=v;
+      if(kind==="w") draft.sets[i].weight=v; else draft.sets[i].reps=Math.round(v); };
+    st.querySelector(".dec").onclick=()=> setv((+input.value||0)-step);
+    st.querySelector(".inc").onclick=()=> setv((+input.value||0)+step);
+    input.oninput=()=>{ const v=+input.value; if(!isNaN(v)){ if(kind==="w")draft.sets[i].weight=v; else draft.sets[i].reps=Math.round(v);} };
+  });
+  exview.querySelectorAll(".chip").forEach(c=>{
+    c.onclick=()=>{ const i=+c.dataset.i, rir=+c.dataset.rir;
+      draft.sets[i].rir = (draft.sets[i].rir===rir)? null : rir;
+      exview.querySelectorAll(`.chips[data-set="${i}"] .chip`).forEach(x=>x.classList.toggle("on", +x.dataset.rir===draft.sets[i].rir));
+    };
+  });
+  $("#rough").onclick=()=>{ draft.readiness=!draft.readiness; $("#rough").classList.toggle("on",draft.readiness); };
+  $("#finish").onclick=()=> finishExercise(ex);
+}
+
+function finishExercise(ex){
+  const sets = draft.sets.map(s=>({weight:+s.weight, reps:+s.reps, rir:s.rir, wasWarmup:false}))
+                         .filter(s=>s.weight>=0 && s.reps>0);
+  if(!sets.length) return toast("Log at least one set");
+  // readiness applies a one-off ease but is just a flag for the engine to skip plateau/trend
+  const flags=[];
+  if(draft.plan.flag==="SEED") flags.push("SEED");
+  if(draft.plan.flag==="DELOAD") flags.push("DELOAD");
+  if(draft.readiness) flags.push("READINESS");
+  const workout={ id:uid(), exerciseId:ex.id, profileId:DB.activeProfile, date:new Date().toISOString(), goal:exCfg(ex).key,
+    readinessFlag:draft.readiness, flags, sets };
+  DB.workouts.push(workout); save(DB);
+
+  const next = prescribe(historyFor(ex.id), ex);
+  draft=null;
+  toast("Saved ✓  Next: " + planText(ex, next.weight, next.reps));
+  renderExercise();
+}
+
+/* ---------- sparkline of e1RM over time ---------- */
+function sparkline(ex, descSessions){
+  const pts = descSessions.slice().reverse()
+    .map(w=> bestE1RM(workSets(w), ex)).filter(v=>v>0);
+  if(pts.length<2) return `<div class="note" style="margin:0">Two sessions and a trend line appears here.</div>`;
+  const W=480,H=70,pad=6;
+  const mn=Math.min(...pts), mx=Math.max(...pts), rng=(mx-mn)||1;
+  const x=i=> pad + i*(W-2*pad)/(pts.length-1);
+  const y=v=> H-pad - (v-mn)/rng*(H-2*pad);
+  const d=pts.map((v,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const last=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block">
+    <path d="${d}" fill="none" stroke="#36d6a6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(pts.length-1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="4" fill="#36d6a6"/>
+  </svg>`;
+}
+
+/* ---------- misc UI ---------- */
+let toastT=null;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600); }
+function shake(el){ el.style.borderColor="var(--bad)"; setTimeout(()=>el.style.borderColor="",600); }
+function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString(undefined,{day:"numeric",month:"short"}); }
+
+/* ---------- go ---------- */
+renderProfiles();
+renderHome();
+
+/* offline support — register service worker (no-op when unsupported / file://) */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
